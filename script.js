@@ -46,12 +46,13 @@ async function sendMessage() {
   if (currentMode === 'image') {
     try {
       const promptClean = encodeURIComponent(userText);
-      const imgUrl = `https://image.pollinations.ai/prompt/${promptClean}?width=800&height=600&nologo=true&key=${IMAGE_API_KEY}`;
+      const imgUrl = `https://image.pollinations.ai/prompt/${promptClean}?width=800&height=600&nologo=true`;
       
       const imgElement = document.createElement('img');
       imgElement.src = imgUrl;
       imgElement.alt = "AI Şəkil";
       imgElement.onload = () => scrollToBottom();
+      imgElement.onerror = () => { loadingDiv.innerText = "Şəkil yüklənə bilmədi."; };
       
       loadingDiv.innerHTML = 'Buyurun, istədiyiniz şəkil:<br>';
       loadingDiv.appendChild(imgElement);
@@ -85,15 +86,15 @@ async function sendMessage() {
 
     const data = await response.json();
 
-    if (data.choices && data.choices[0].message.content) {
+    if (data.choices && data.choices[0] && data.choices[0].message) {
       loadingDiv.innerText = data.choices[0].message.content;
     } else if (data.error) {
       loadingDiv.innerText = "API Xətası: " + data.error.message;
     } else {
-      loadingDiv.innerText = "Üzr istəyirəm, cavab hazırlana bilmədi.";
+      loadingDiv.innerText = "Server cavab verdi, lakin məlumat oxunmadı: " + JSON.stringify(data);
     }
   } catch (error) {
-    loadingDiv.innerText = "Şəbəkə xətası baş verdi. Yenidən yoxlayın.";
+    loadingDiv.innerText = "Şəbəkə xətası baş verdi: " + error.message;
   }
 
   scrollToBottom();
