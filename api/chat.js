@@ -22,11 +22,11 @@ export default async function handler(req, res) {
       headers: {
         "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://btl-si.vercel.app", // İstəyə görə saytının adı
+        "HTTP-Referer": "https://btl-si.vercel.app",
         "X-Title": "BTL-SI"
       },
       body: JSON.stringify({
-        model: "meta-llama/llama-3.1-8b-instruct:free", // Pulsuz və stabil model
+        model: "meta-llama/llama-3.1-8b-instruct",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: prompt }
