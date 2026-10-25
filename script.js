@@ -43,7 +43,7 @@ function selectMode(mode, label) {
   } else if (mode === 'search') {
     inputField.placeholder = "Dərin araşdırma etmək istədiyiniz mövzunu yazın...";
   } else if (mode === 'image') {
-    inputField.placeholder = "Yaratmaq istədiyiniz şəkli təsvir edin...";
+    inputField.placeholder = "Yaratmaq istədiyiniz şəkli təsvir edin (məs: Ronaldo)...";
   }
 }
 
@@ -174,8 +174,10 @@ async function sendMessage() {
 
   if (currentMode === 'image') {
     try {
-      const promptClean = encodeURIComponent(userText + ", high quality, detailed, 4k resolution");
-      const imgUrl = `https://image.pollinations.ai/prompt/${promptClean}?width=800&height=600&nologo=true`;
+      // Flux modeli və keyfiyyəti artıran avtomatik əlavələr
+      const enhancedPrompt = userText + ", photorealistic, highly detailed, 8k resolution, cinematic lighting, sharp focus, masterpiece";
+      const promptClean = encodeURIComponent(enhancedPrompt);
+      const imgUrl = `https://image.pollinations.ai/prompt/${promptClean}?model=flux&width=1024&height=768&nologo=true`;
       
       const imgElement = document.createElement('img');
       imgElement.src = imgUrl;
