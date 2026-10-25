@@ -19,7 +19,7 @@ function setMode(mode) {
     inputField.placeholder = "Dərin araşdırma etmək istədiyiniz mövzunu yazın...";
   } else {
     imgBtn.classList.add('active');
-    inputField.placeholder = "Yaratmaq istədiyiniz şəkli təsvir edin...";
+    inputField.placeholder = "Yaratmaq istədiyiniz şəkli ingilis dilində təsvir edin (məs: flag of germany)...";
   }
 }
 
@@ -42,7 +42,8 @@ async function sendMessage() {
 
   if (currentMode === 'image') {
     try {
-      const promptClean = encodeURIComponent(userText);
+      // Şəkil modelinin başa düşməsi üçün sorğunu təmizləyirik və keyfiyyət parametry əlavə edirik
+      const promptClean = encodeURIComponent(userText + ", high quality, detailed, 4k resolution");
       const imgUrl = `https://image.pollinations.ai/prompt/${promptClean}?width=800&height=600&nologo=true`;
       
       const imgElement = document.createElement('img');
@@ -76,7 +77,7 @@ async function sendMessage() {
     if (data.choices && data.choices.length > 0 && data.choices[0].message) {
       loadingDiv.innerText = data.choices[0].message.content;
     } else if (data.error) {
-      loadingDiv.innerText = "Xəta: " + (data.error.message || data.error);
+      loadingDiv.innerText = "Xəta: " + (data.error.message || JSON.stringify(data.error));
     } else {
       loadingDiv.innerText = "Gözlənilməz cavab formatı alındı.";
     }
