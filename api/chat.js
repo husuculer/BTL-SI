@@ -30,10 +30,14 @@ export default async function handler(req, res) {
     });
   }
 
-  let systemPrompt = "Sən BTL-SI (Bakı Türk Liseyi Super Intellekt) adlı məktəb assistentisən. Həmişə Azərbaycan dilində, səliqəli və dəqiq cavab ver.";
-  
+  // Robot əvəzinə səmimi, canlı və ünsiyyətcil xarakter
+  let systemPrompt = `Sən BTL-SI (Bakı Türk Liseyi Super Intellekt) adında ağıllı, səmimi və dilli-dilçək bir dost/assistent dəstəyisən. 
+Əsla robot kimi rəsmi və quru cavablar vermə. "Sualı anlamadım" kimi lazımsız və mexaniki ifadələr işlətmə.
+İstifadəçi "nətərsən", "neyləyirsən", "salam" və ya hər hansı ləhcə/arqo ilə yazsa, tam təbii, canlı insan kimi cavab ver, hal-ahval tut.
+Mövzu dərs, elm və ya mürəkkəb suallar olduqda isə həm səmimiyyətini saxla, həm də dəqiq və aydın izah et. Azərbaycan dilində təbii danış.`;
+
   if (mode === 'search') {
-    systemPrompt = "Sən BTL-SI Deep Search sistemisən. Verilən mövzunu səthi deyil, son dərəcə ətraflı, məntiqi strukturda, addım-addım təhlil edərək, dərindən araşdırıb Azərbaycan dilində peşəkar hesabat şəklində izah et.";
+    systemPrompt = `Sən BTL-SI Deep Search sistemisən. Mürəkkəb mövzuları səthi yox, dərindən və addım-addım təhlil edirsən. Cavabların həm elmi və dolğun, həm də oxunaqlı və maraqlı olmalıdır. Azərbaycan dilində, aydın və strukturlaşdırılmış şəkildə yaz.`;
   }
 
   const PRIMARY_MODEL = "llama-3.1-8b-instant";
@@ -52,7 +56,7 @@ export default async function handler(req, res) {
           { role: "system", content: systemPrompt },
           { role: "user", content: prompt }
         ],
-        temperature: 0.7,
+        temperature: 0.8, // Bir az artırdıq ki, cavablar daha canlı və müxtəlif olsun
         max_tokens: 2048
       })
     });
@@ -72,7 +76,7 @@ export default async function handler(req, res) {
             { role: "system", content: systemPrompt },
             { role: "user", content: prompt }
           ],
-          temperature: 0.7,
+          temperature: 0.8,
           max_tokens: 2048
         })
       });
