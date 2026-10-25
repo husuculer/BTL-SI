@@ -12,17 +12,23 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Pollinations AI text endpoint (heç bir açar tələb etmir)
-    const fullPrompt = `${systemPrompt}\n\nİstifadəçi sualı: ${prompt}`;
-    const encodedPrompt = encodeURIComponent(fullPrompt);
-
-    const response = await fetch(`https://text.pollinations.ai/${encodedPrompt}`, {
-      method: "GET"
+    const response = await fetch("https://text.pollinations.ai/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: prompt }
+        ],
+        model: "openai"
+      })
     });
 
     const textData = await response.text();
 
-    if (textData) {
+    if (response.ok && textData) {
       return res.status(200).json({
         choices: [
           {
@@ -33,7 +39,7 @@ export default async function handler(req, res) {
         ]
       });
     } else {
-      return res.status(500).json({ error: "Pollinations API-dən boş cavab gəldi." });
+      return res.status(500).json({ error: "Pollinations API xətası: " + textData });
     }
   } catch (error) {
     return res.status(500).json({ error: error.message });
