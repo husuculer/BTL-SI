@@ -175,7 +175,6 @@ async function sendMessage() {
   if (currentMode === 'image') {
     try {
       const promptClean = encodeURIComponent(userText + ", high quality, detailed, realistic, 4k");
-      // Limitə düşməyən standart təmiz endpoint
       const imgUrl = `https://image.pollinations.ai/prompt/${promptClean}?width=800&height=600&nologo=true`;
       
       const imgElement = document.createElement('img');
