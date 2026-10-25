@@ -4,6 +4,11 @@ export default async function handler(req, res) {
   }
 
   const { mode, prompt } = req.body;
+  const GROQ_API_KEY = process.env.GROQ_API_KEY;
+
+  if (!GROQ_API_KEY) {
+    return res.status(500).json({ error: 'GROQ_API_KEY environment variable is not set.' });
+  }
 
   let systemPrompt = "Sən BTL-SI (Bakı Türk Liseyi Super Intellekt) adlı məktəb assistentisən. Həmişə Azərbaycan dilində, səliqəli və dəqiq cavab ver.";
   
@@ -12,34 +17,28 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch("https://text.pollinations.ai/", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
+        "Authorization": `Bearer ${GROQ_API_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: prompt }
         ],
-        model: "openai"
+        temperature: 0.7
       })
     });
 
-    const textData = await response.text();
-
-    if (response.ok && textData) {
-      return res.status(200).json({
-        choices: [
-          {
-            message: {
-              content: textData
-            }
-          }
-        ]
-      });
+    const data = await response.json();
+    
+    if (data.choices && data.choices.length > 0) {
+      return res.status(200).json(data);
     } else {
-      return res.status(500).json({ error: "Pollinations API xətası: " + textData });
+      return res.status(500).json({ error: "Groq API xətası: " + JSON.stringify(data) });
     }
   } catch (error) {
     return res.status(500).json({ error: error.message });
