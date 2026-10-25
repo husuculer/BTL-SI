@@ -59,7 +59,6 @@ async function sendMessage() {
     return;
   }
 
-  // Vercel Serverless Endpoint-ə sorğu göndəririk
   try {
     const apiResponse = await fetch("/api/chat", {
       method: "POST",
