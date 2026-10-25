@@ -30,7 +30,6 @@ export default async function handler(req, res) {
     });
   }
 
-  // Robot əvəzinə səmimi, canlı və ünsiyyətcil xarakter
   let systemPrompt = `Sən BTL-SI (Bakı Türk Liseyi Super Intellekt) adında ağıllı, səmimi və dilli-dilçək bir dost/assistent dəstəyisən. 
 Əsla robot kimi rəsmi və quru cavablar vermə. "Sualı anlamadım" kimi lazımsız və mexaniki ifadələr işlətmə.
 İstifadəçi "nətərsən", "neyləyirsən", "salam" və ya hər hansı ləhcə/arqo ilə yazsa, tam təbii, canlı insan kimi cavab ver, hal-ahval tut.
@@ -56,7 +55,7 @@ Mövzu dərs, elm və ya mürəkkəb suallar olduqda isə həm səmimiyyətini s
           { role: "system", content: systemPrompt },
           { role: "user", content: prompt }
         ],
-        temperature: 0.8, // Bir az artırdıq ki, cavablar daha canlı və müxtəlif olsun
+        temperature: 0.8,
         max_tokens: 2048
       })
     });
