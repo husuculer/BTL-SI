@@ -9,6 +9,7 @@
       --primary-color: #6b1d38;
       --primary-hover: #52142a;
       --bg-color: #400f20;
+      --sidebar-bg: #2d0a17;
       --card-bg: #ffffff;
       --text-color: #2b2b2b;
     }
@@ -20,24 +21,89 @@
       background: var(--bg-color);
       color: var(--text-color);
       display: flex;
-      justify-content: center;
-      align-items: center;
       height: 100vh;
       margin: 0;
-      padding: 15px;
+      overflow: hidden;
     }
 
-    .chat-container {
-      background: var(--card-bg);
-      border-radius: 16px;
-      width: 100%;
-      max-width: 700px;
-      height: 92vh;
+    .app-container {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      background: var(--sidebar-bg);
+      color: white;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-      border: 3px solid var(--primary-color);
-      overflow: hidden;
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .new-chat-btn {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      width: calc(100% - 32px);
+      margin: 16px 16px 0 16px;
+      text-align: center;
+      transition: background 0.2s;
+    }
+    .new-chat-btn:hover { background: var(--primary-hover); }
+
+    .chat-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .chat-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      color: #ddd;
+      background: rgba(255,255,255,0.05);
+      transition: background 0.2s;
+    }
+
+    .chat-item:hover { background: rgba(255,255,255,0.1); }
+    .chat-item.active { background: var(--primary-color); color: white; }
+
+    .delete-chat {
+      background: none;
+      border: none;
+      color: #ff9999;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px 6px;
+    }
+    .delete-chat:hover { color: #ff4d4d; }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      background: var(--card-bg);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
     }
 
     .chat-header {
@@ -47,32 +113,8 @@
       text-align: center;
     }
 
-    .chat-header h2 { margin: 0; font-size: 20px; letter-spacing: 1px; }
-    .chat-header p { margin: 4px 0 0 0; font-size: 13px; opacity: 0.9; }
-
-    .mode-selector {
-      display: flex;
-      background: #f1f1f1;
-      border-bottom: 2px solid #ddd;
-    }
-
-    .mode-btn {
-      flex: 1;
-      padding: 10px 5px;
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 13px;
-      color: #555;
-      transition: 0.3s;
-      text-align: center;
-    }
-
-    .mode-btn.active {
-      background: var(--primary-color);
-      color: white;
-    }
+    .chat-header h2 { margin: 0; font-size: 18px; letter-spacing: 1px; }
+    .chat-header p { margin: 2px 0 0 0; font-size: 12px; opacity: 0.9; }
 
     .chat-box {
       flex: 1;
@@ -85,19 +127,13 @@
     }
 
     .message {
-      max-width: 85%;
+      max-width: 80%;
       padding: 12px 16px;
       border-radius: 12px;
       font-size: 15px;
       line-height: 1.5;
       white-space: pre-wrap;
       word-break: break-word;
-      animation: fadeIn 0.3s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
     .user-msg {
@@ -145,15 +181,94 @@
       40% { transform: scale(1.0); }
     }
 
+    /* Input & Controls */
     .input-area {
+      position: relative;
       display: flex;
+      align-items: center;
       padding: 15px;
       background: white;
       border-top: 1px solid #eee;
       gap: 10px;
     }
 
-    input {
+    .plus-container {
+      position: relative;
+    }
+
+    .plus-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 2px solid var(--primary-color);
+      background: white;
+      color: var(--primary-color);
+      font-size: 22px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+    }
+    .plus-btn:hover { background: var(--primary-color); color: white; }
+
+    .mode-menu {
+      display: none;
+      position: absolute;
+      bottom: 55px;
+      left: 0;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      width: 200px;
+      z-index: 100;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .mode-menu.show { display: flex; }
+
+    .mode-option {
+      padding: 12px 15px;
+      border: none;
+      background: none;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+    .mode-option:hover { background: #f5f5f5; }
+
+    .active-mode-indicator {
+      display: none;
+      position: absolute;
+      top: -32px;
+      left: 15px;
+      background: #f1f1f1;
+      border: 1px solid #ccc;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      align-items: center;
+      gap: 6px;
+    }
+    .active-mode-indicator.show { display: flex; }
+    .cancel-mode {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      color: #666;
+    }
+    .cancel-mode:hover { color: #000; }
+
+    input[type="text"] {
       flex: 1;
       padding: 12px 15px;
       border-radius: 8px;
@@ -162,7 +277,7 @@
       font-size: 15px;
     }
 
-    input:focus { border-color: var(--primary-color); }
+    input[type="text"]:focus { border-color: var(--primary-color); }
 
     .send-btn {
       padding: 12px 20px;
@@ -181,25 +296,45 @@
 </head>
 <body>
 
-  <div class="chat-container">
-    <div class="chat-header">
-      <h2>BTL-SI</h2>
-      <p>Bakı Türk Liseyi Super Intellekt - Yardımçı Asistent</p>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h3 style="margin:0; font-size:16px;">Söhbət Tarixçəsi</h3>
+      </div>
+      <button class="new-chat-btn" onclick="createNewChat()">+ Yeni Söhbət</button>
+      <div class="chat-list" id="chatList"></div>
     </div>
 
-    <div class="mode-selector">
-      <button id="chatModeBtn" class="mode-btn active" onclick="setMode('chat')">💬 Söhbət</button>
-      <button id="searchModeBtn" class="mode-btn" onclick="setMode('search')">🌐 Deep Search</button>
-      <button id="imageModeBtn" class="mode-btn" onclick="setMode('image')">🎨 Şəkil Yarat</button>
-    </div>
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="chat-header">
+        <h2>BTL-SI</h2>
+        <p>Bakı Türk Liseyi Super Intellekt</p>
+      </div>
 
-    <div class="chat-box" id="chatBox">
-      <div class="message ai-msg">Salam! Mən BTL-SI. İstədiyin rejimi yuxarıdan seçərək sual verə, dərin araşdırma edə və ya şəkil yarada bilərsən.</div>
-    </div>
+      <div class="chat-box" id="chatBox">
+        <div class="message ai-msg">Salam! Mən BTL-SI. Sual vermək və ya rejim seçmək üçün sol aşağıdakı "+" düyməsindən istifadə edə bilərsən.</div>
+      </div>
 
-    <div class="input-area">
-      <input type="text" id="userInput" placeholder="Mesajınızı bura yazın..." onkeypress="handleKeyPress(event)">
-      <button class="send-btn" onclick="sendMessage()">Göndər</button>
+      <div class="input-area">
+        <div class="active-mode-indicator" id="activeModeIndicator">
+          <span id="activeModeText">Rejim: Söhbət</span>
+          <button class="cancel-mode" onclick="resetMode()">×</button>
+        </div>
+
+        <div class="plus-container">
+          <button class="plus-btn" onclick="toggleModeMenu()">+</button>
+          <div class="mode-menu" id="modeMenu">
+            <button class="mode-option" onclick="selectMode('chat', '💬 Normal Söhbət')">💬 Söhbət</button>
+            <button class="mode-option" onclick="selectMode('search', '🌐 Deep Search')">🌐 Deep Search</button>
+            <button class="mode-option" onclick="selectMode('image', '🎨 Şəkil Yarat')">🎨 Şəkil Yarat</button>
+          </div>
+        </div>
+
+        <input type="text" id="userInput" placeholder="Mesajınızı bura yazın..." onkeypress="handleKeyPress(event)">
+        <button class="send-btn" onclick="sendMessage()">Göndər</button>
+      </div>
     </div>
   </div>
 
