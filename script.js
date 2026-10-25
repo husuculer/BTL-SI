@@ -1,23 +1,28 @@
-// Göndərdiyin Yeni API Açarları
 const GROQ_API_KEY = "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";
 const IMAGE_API_KEY = "key_CgPCA82szNRyf7CEabwd9";
 
-let currentMode = 'chat'; // Varsayılan mod
+let currentMode = 'chat';
 
 function setMode(mode) {
   currentMode = mode;
   const chatBtn = document.getElementById('chatModeBtn');
+  const searchBtn = document.getElementById('searchModeBtn');
   const imgBtn = document.getElementById('imageModeBtn');
   const inputField = document.getElementById('userInput');
 
+  chatBtn.classList.remove('active');
+  searchBtn.classList.remove('active');
+  imgBtn.classList.remove('active');
+
   if (mode === 'chat') {
     chatBtn.classList.add('active');
-    imgBtn.classList.remove('active');
     inputField.placeholder = "Sualınızı və ya mesajınızı yazın...";
+  } else if (mode === 'search') {
+    searchBtn.classList.add('active');
+    inputField.placeholder = "Dərin araşdırma etmək istədiyiniz mövzunu yazın...";
   } else {
     imgBtn.classList.add('active');
-    chatBtn.classList.remove('active');
-    inputField.placeholder = "Yaratmaq istədiyiniz şəkli təsvir edin (məs: qırmızı alma)...";
+    inputField.placeholder = "Yaratmaq istədiyiniz şəkli təsvir edin...";
   }
 }
 
@@ -30,7 +35,6 @@ async function sendMessage() {
   appendMessage(userText, 'user-msg');
   inputField.value = '';
 
-  // Animasiyalı Yüklənir qutusu
   const loadingDiv = document.createElement('div');
   loadingDiv.className = 'message ai-msg';
   loadingDiv.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div>`;
@@ -39,7 +43,7 @@ async function sendMessage() {
   chatBox.appendChild(loadingDiv);
   scrollToBottom();
 
-  // Mode 1: Şəkil Yaratmaq
+  // 1. Şəkil Rejimi
   if (currentMode === 'image') {
     try {
       const promptClean = encodeURIComponent(userText);
@@ -58,7 +62,14 @@ async function sendMessage() {
     return;
   }
 
-  // Mode 2: Groq (Llama 3) AI Mətn Cavabı
+  // 2. Sistem Təlimatları (Rejimlərə görə dəyişir)
+  let systemPrompt = "Sən BTL-SI (Bakı Türk Liseyi Super Intellekt) adlı məktəb assistentisən. Həmişə Azərbaycan dilində, səliqəli və dəqiq cavab ver.";
+  
+  if (currentMode === 'search') {
+    systemPrompt = "Sən BTL-SI Deep Search sistemisən. Verilən mövzunu səthi deyil, son dərəcə ətraflı, məntiqi strukturda, addım-addım təhlil edərək, dərindən araşdırıb Azərbaycan dilində peşəkar hesabat şəklində izah et.";
+  }
+
+  // Groq API Sorğusu
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -69,14 +80,8 @@ async function sendMessage() {
       body: JSON.stringify({
         model: "llama-3.3-70b-versatile",
         messages: [
-          {
-            role: "system",
-            content: "Sən BTL-SI (Bakı Türk Liseyi Super Intellekt) adlı məktəb assistentisən. Həmişə Azərbaycan dilində, səliqəli, dəqiq və yardımçı tərzdə cavab ver. İstifadəçinin yazdığı kiçik hərf səhvlərini anlayışla qarşıla, mənanı dərk edərək peşəkar şəkildə cavablandır."
-          },
-          {
-            role: "user",
-            content: userText
-          }
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userText }
         ]
       })
     });
