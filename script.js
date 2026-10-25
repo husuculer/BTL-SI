@@ -1,4 +1,4 @@
-const GROQ_API_KEY = "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";
+const GROQ_API_KEY = "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";
 const IMAGE_API_KEY = "key_CgPCA82szNRyf7CEabwd9";
 
 let currentMode = 'chat';
@@ -75,7 +75,7 @@ async function sendMessage() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "llama3-8b-8192",
+        model: "llama-3.1-8b-instant",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userText }
