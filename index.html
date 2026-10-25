@@ -1,340 +1,109 @@
-<!DOCTYPE html>
-<html lang="az">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BTL-SI - Bakı Türk Liseyi Super Intellekt</title>
-  <style>
-    :root {
-      --primary-color: #6b1d38;
-      --primary-hover: #52142a;
-      --bg-color: #400f20;
-      --sidebar-bg: #2d0a17;
-      --card-bg: #ffffff;
-      --text-color: #2b2b2b;
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ 
+      error: { 
+        message: 'Method Not Allowed. Yalnız POST sorğuları qəbul edilir.',
+        code: 'method_not_allowed' 
+      } 
+    });
+  }
+
+  const { mode, prompt } = req.body;
+
+  if (!prompt || typeof prompt !== 'string' || prompt.trim() === '') {
+    return res.status(400).json({ 
+      error: { 
+        message: 'Keçərli prompt daxil edilməyib.',
+        code: 'invalid_prompt' 
+      } 
+    });
+  }
+
+  const GROQ_API_KEY = process.env.GROQ_API_KEY;
+
+  if (!GROQ_API_KEY) {
+    return res.status(500).json({ 
+      error: { 
+        message: 'GROQ_API_KEY mühit dəyişəni Vercel panelində təyin edilməyib.',
+        code: 'missing_api_key' 
+      } 
+    });
+  }
+
+  let systemPrompt = `Sən BTL-SI (Bakı Türk Liseyi Super Intellekt) adında ağıllı, səmimi və dilli-dilçək bir dost/assistent dəstəyisən. 
+Əsla robot kimi rəsmi və quru cavablar vermə. "Sualı anlamadım" kimi lazımsız və mexaniki ifadələr işlətmə.
+İstifadəçi "nətərsən", "neyləyirsən", "salam" və ya hər hansı ləhcə/arqo ilə yazsa, tam təbii, canlı insan kimi cavab ver, hal-ahval tut.
+Mövzu dərs, elm, lisey və ya mürəkkəb suallar olduqda isə həm səmimiyyətini saxla, həm də aşağıdakı məlumat bazasına əsaslanaraq dəqiq və aydın izah et. Azərbaycan dilində təbii danış.
+
+TDV BAKI TÜRK LİSEYİ HAQQINDA MƏLUMAT BAZASI:
+- Tarixçə və Status: 1994-cü ildə fəaliyyətə başlayıb. Türkiyə Diyanət Vəqfi tərəfindən idarə olunur, Təhsil Nazirliyinin tabeliyindədir. Təhsil ödənişsizdir, dərslər Azərbaycan dilindədir.
+- Rəhbərlik: Direktor Kadir Bektaşoğlu (2004-cü ildən).
+- Qəbul Qaydaları: Hər il iyun ayının əvvəlində VI (5-ci sinif bitirənlər) və IX (8-ci sinif bitirənlər) siniflərə xüsusi imtahanla qəbul aparılır. Müraciət müddəti mayın 5-dən 30-dəkdir. Tələb olunan sənədlər: məktəb tərəfindən təsdiqlənmiş attestat/arayış, 2 ədəd 3x4 şəkil, yaş kağızının surəti, valideyn məlumatları. V sinif imtahan fənləri: Azərbaycan dili, riyaziyyat, Azərbaycan tarixi, ingilis dili. VIII sinif imtahan fənləri ixtisas qrupuna uyğundur (məs., I qrup üçün Azərbaycan dili, ingilis dili, fizika, kimya, riyaziyyat). Nəticələr iyunun ortasında elan olunur.
+- Akademik Nailiyyətlər: 2023-cü ildə 600-dən çox bal toplayan 38 məzunun hamısı liseyin yetirməsidir. 2 mart 2025 buraxılış imtahanında 300 bal toplayan 23 şagirddən 5-i bu liseydəndir.
+- Olimpiadalar: Araz Şadmanzadə (11-ci sinif) IMEC olimpiadasında qızıl medal qazanıb. 2025 "Kings" olimpiadasında Ali Məmmədov, Jasmin Qurbalı və Leyla Kərimli qızıl medal əldə ediblər.
+- Dərnəklər və İnfrastruktur: STEM və proqramlaşdırma klubu ("Sumqayıt Cup" müsabiqəsində 3-cü yer), Hilal Kursları filialı (imtahanlara və olimpiadalara hazırlıq), teatr-studio, kitabxana, şeir-sehr salonu, futzal, basketbol və voleybol idman dərnəkləri.`;
+
+  if (mode === 'search') {
+    systemPrompt = `Sən BTL-SI Deep Search sistemisən. Mürəkkəb mövzuları və TDV Bakı Türk Liseyi ilə bağlı sorğuları səthi yox, dərindən və addım-addım təhlil edirsən. Cavabların həm elmi və dolğun, həm də oxunaqlı və maraqlı olmalıdır. Azərbaycan dilində, aydın və strukturlaşdırılmış şəkildə yaz.`;
+  }
+
+  const PRIMARY_MODEL = "llama-3.1-8b-instant";
+  const FALLBACK_MODEL = "openai/gpt-oss-20b";
+
+  try {
+    let response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${GROQ_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: PRIMARY_MODEL,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.8,
+        max_tokens: 2048
+      })
+    });
+
+    let data = await response.json();
+
+    if (!response.ok && data.error && data.error.code === 'model_not_found') {
+      response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${GROQ_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: FALLBACK_MODEL,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: prompt }
+          ],
+          temperature: 0.8,
+          max_tokens: 2048
+        })
+      });
+      data = await response.json();
     }
 
-    * { box-sizing: border-box; }
-
-    body {
-      font-family: 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg-color);
-      color: var(--text-color);
-      display: flex;
-      height: 100vh;
-      margin: 0;
-      overflow: hidden;
+    if (response.ok && data.choices && data.choices.length > 0) {
+      return res.status(200).json(data);
+    } else {
+      return res.status(response.status || 500).json({ 
+        error: data.error || { message: 'Groq API tərəfindən bilinməyən xəta qaytarıldı.' } 
+      });
     }
 
-    .app-container {
-      display: flex;
-      width: 100vw;
-      height: 100vh;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: 280px;
-      background: var(--sidebar-bg);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .sidebar-header {
-      padding: 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .new-chat-btn {
-      background: var(--primary-color);
-      color: white;
-      border: none;
-      padding: 10px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      width: calc(100% - 32px);
-      margin: 16px 16px 0 16px;
-      text-align: center;
-      transition: background 0.2s;
-    }
-    .new-chat-btn:hover { background: var(--primary-hover); }
-
-    .chat-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .chat-item {
-      padding: 10px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 14px;
-      color: #ddd;
-      background: rgba(255,255,255,0.05);
-      transition: background 0.2s;
-    }
-
-    .chat-item:hover { background: rgba(255,255,255,0.1); }
-    .chat-item.active { background: var(--primary-color); color: white; }
-
-    .delete-chat {
-      background: none;
-      border: none;
-      color: #ff9999;
-      cursor: pointer;
-      font-size: 14px;
-      padding: 2px 6px;
-    }
-    .delete-chat:hover { color: #ff4d4d; }
-
-    /* Main Content */
-    .main-content {
-      flex: 1;
-      background: var(--card-bg);
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
-
-    .chat-header {
-      background: var(--primary-color);
-      color: white;
-      padding: 16px;
-      text-align: center;
-    }
-
-    .chat-header h2 { margin: 0; font-size: 18px; letter-spacing: 1px; }
-    .chat-header p { margin: 2px 0 0 0; font-size: 12px; opacity: 0.9; }
-
-    .chat-box {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      background: #fdf8f9;
-    }
-
-    .message {
-      max-width: 80%;
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-size: 15px;
-      line-height: 1.5;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .user-msg {
-      background: var(--primary-color);
-      color: white;
-      align-self: flex-end;
-      border-bottom-right-radius: 2px;
-    }
-
-    .ai-msg {
-      background: #f1f1f1;
-      color: #1a1a1a;
-      align-self: flex-start;
-      border-bottom-left-radius: 2px;
-      border: 1px solid #e2e2e2;
-    }
-
-    .ai-msg img {
-      max-width: 100%;
-      border-radius: 8px;
-      margin-top: 8px;
-      border: 1px solid #ddd;
-    }
-
-    /* Loqo Scale Animasiyası (Yüklənir...) */
-    .logo-loader {
-      width: 35px;
-      height: 35px;
-      border-radius: 50%;
-      object-fit: cover;
-      animation: pulseScale 1.2s infinite ease-in-out;
-    }
-
-    @keyframes pulseScale {
-      0%, 100% {
-        transform: scale(1);
-        opacity: 0.6;
-      }
-      50% {
-        transform: scale(1.25);
-        opacity: 1;
-      }
-    }
-
-    /* Input & Controls */
-    .input-area {
-      position: relative;
-      display: flex;
-      align-items: center;
-      padding: 15px;
-      background: white;
-      border-top: 1px solid #eee;
-      gap: 10px;
-    }
-
-    .plus-container {
-      position: relative;
-    }
-
-    .plus-btn {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      border: 2px solid var(--primary-color);
-      background: white;
-      color: var(--primary-color);
-      font-size: 22px;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: 0.2s;
-    }
-    .plus-btn:hover { background: var(--primary-color); color: white; }
-
-    .mode-menu {
-      display: none;
-      position: absolute;
-      bottom: 55px;
-      left: 0;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      width: 200px;
-      z-index: 100;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .mode-menu.show { display: flex; }
-
-    .mode-option {
-      padding: 12px 15px;
-      border: none;
-      background: none;
-      text-align: left;
-      cursor: pointer;
-      font-size: 14px;
-      color: #333;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: background 0.2s;
-    }
-    .mode-option:hover { background: #f5f5f5; }
-
-    .active-mode-indicator {
-      display: none;
-      position: absolute;
-      top: -32px;
-      left: 15px;
-      background: #f1f1f1;
-      border: 1px solid #ccc;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      align-items: center;
-      gap: 6px;
-    }
-    .active-mode-indicator.show { display: flex; }
-    .cancel-mode {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-      color: #666;
-    }
-    .cancel-mode:hover { color: #000; }
-
-    input[type="text"] {
-      flex: 1;
-      padding: 12px 15px;
-      border-radius: 8px;
-      border: 2px solid #ddd;
-      outline: none;
-      font-size: 15px;
-    }
-
-    input[type="text"]:focus { border-color: var(--primary-color); }
-
-    .send-btn {
-      padding: 12px 20px;
-      border: none;
-      border-radius: 8px;
-      background: var(--primary-color);
-      color: white;
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .send-btn:hover { background: var(--primary-hover); }
-  </style>
-</head>
-<body>
-
-  <div class="app-container">
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <div class="sidebar-header">
-        <h3 style="margin:0; font-size:16px;">Söhbət Tarixçəsi</h3>
-      </div>
-      <button class="new-chat-btn" onclick="createNewChat()">+ Yeni Söhbət</button>
-      <div class="chat-list" id="chatList"></div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content">
-      <div class="chat-header">
-        <h2>BTL-SI</h2>
-        <p>Bakı Türk Liseyi Super Intellekt</p>
-      </div>
-
-      <div class="chat-box" id="chatBox">
-        <div class="message ai-msg">Salam! Mən BTL-SI. Sual vermək və ya rejim seçmək üçün sol aşağıdakı "+" düyməsindən istifadə edə bilərsən.</div>
-      </div>
-
-      <div class="input-area">
-        <div class="active-mode-indicator" id="activeModeIndicator">
-          <span id="activeModeText">Rejim: Söhbət</span>
-          <button class="cancel-mode" onclick="resetMode()">×</button>
-        </div>
-
-        <div class="plus-container">
-          <button class="plus-btn" onclick="toggleModeMenu()">+</button>
-          <div class="mode-menu" id="modeMenu">
-            <button class="mode-option" onclick="selectMode('chat', '💬 Normal Söhbət')">💬 Söhbət</button>
-            <button class="mode-option" onclick="selectMode('search', '🌐 Deep Search')">🌐 Deep Search</button>
-            <button class="mode-option" onclick="selectMode('image', '🎨 Şəkil Yarat')">🎨 Şəkil Yarat</button>
-          </div>
-        </div>
-
-        <input type="text" id="userInput" placeholder="Mesajınızı bura yazın..." onkeypress="handleKeyPress(event)">
-        <button class="send-btn" onclick="sendMessage()">Göndər</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="script.js"></script>
-</body>
-</html>
+  } catch (error) {
+    return res.status(500).json({ 
+      error: { 
+        message: 'Server şəbəkə xətası: ' + error.message,
+        code: 'network_failure' 
+      } 
+    });
+  }
+}
