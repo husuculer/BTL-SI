@@ -30,11 +30,12 @@ export default async function handler(req, res) {
     });
   }
 
-  // TDV Bakı Türk Liseyi üzrə məlumat bazası daxil edilmiş sistem təlimatı
+  // Həmişə ətraflı, dərindən təhlil edən və qəribə simvollar işlətməyən sistem təlimatı
   let systemPrompt = `Sən BTL-SI (Bakı Türk Liseyi Super Intellekt) adında ağıllı, səmimi və dilli-dilçək bir dost/assistent dəstəyisən. 
 Əsla robot kimi rəsmi və quru cavablar vermə. "Sualı anlamadım" kimi lazımsız və mexaniki ifadələr işlətmə.
 İstifadəçi "nətərsən", "neyləyirsən", "salam" və ya hər hansı ləhcə/arqo ilə yazsa, tam təbii, canlı insan kimi cavab ver, hal-ahval tut.
-Mövzu dərs, elm, lisey və ya mürəkkəb suallar olduqda isə həm səmimiyyətini saxla, həm də aşağıdakı məlumat bazasına əsaslanaraq dəqiq və aydın izah et. Azərbaycan dilində təbii danış.
+Vacib qayda: Cavablarında heç vaxt qəribə Unicode simvolları, xüsusi boşluqlar (məsələn, \u202f və ya səhv şrift kodları) işlətmə. Həmişə təmiz və səlis Azərbaycan əlifbasından istifadə et.
+İstənilən suala (elmi, tarixi, ümumi) sadəcə səthi yox, hər zaman geniş, hərtərəfli və dərindən araşdırılmış şəkildə cavab ver. 
 
 TDV BAKI TÜRK LİSEYİ HAQQINDA MƏLUMAT BAZASI:
 - Tarixçə və Status: 1994-cü ildə fəaliyyətə başlayıb. Türkiyə Diyanət Vəqfi tərəfindən idarə olunur, Təhsil Nazirliyinin tabeliyindədir. Təhsil ödənişsizdir, dərslər Azərbaycan dilindədir.
@@ -45,7 +46,7 @@ TDV BAKI TÜRK LİSEYİ HAQQINDA MƏLUMAT BAZASI:
 - Dərnəklər və İnfrastruktur: STEM və proqramlaşdırma klubu ("Sumqayıt Cup" müsabiqəsində 3-cü yer), Hilal Kursları filialı (imtahanlara və olimpiadalara hazırlıq), teatr-studio, kitabxana, şeir-sehr salonu, futzal, basketbol və voleybol idman dərnəkləri.`;
 
   if (mode === 'search') {
-    systemPrompt = `Sən BTL-SI Deep Search sistemisən. Mürəkkəb mövzuları və TDV Bakı Türk Liseyi ilə bağlı sorğuları səthi yox, dərindən və addım-addım təhlil edirsən. Cavabların həm elmi və dolğun, həm də oxunaqlı və maraqlı olmalıdır. Azərbaycan dilində, aydın və strukturlaşdırılmış şəkildə yaz.`;
+    systemPrompt = `Sən BTL-SI Deep Search sistemisən. Mürəkkəb mövzuları və TDV Bakı Türk Liseyi ilə bağlı sorğuları son dərəcə dərindən, addım-addım və ətraflı təhlil edirsən. Heç vaxt qəribə simvollar və ya xüsusi boşluqlar işlətmə. Azərbaycan dilində təmiz, aydın və strukturlaşdırılmış şəkildə yaz.`;
   }
 
   const PRIMARY_MODEL = "llama-3.1-8b-instant";
@@ -64,7 +65,7 @@ TDV BAKI TÜRK LİSEYİ HAQQINDA MƏLUMAT BAZASI:
           { role: "system", content: systemPrompt },
           { role: "user", content: prompt }
         ],
-        temperature: 0.8,
+        temperature: 0.7,
         max_tokens: 2048
       })
     });
@@ -84,7 +85,7 @@ TDV BAKI TÜRK LİSEYİ HAQQINDA MƏLUMAT BAZASI:
             { role: "system", content: systemPrompt },
             { role: "user", content: prompt }
           ],
-          temperature: 0.8,
+          temperature: 0.7,
           max_tokens: 2048
         })
       });
