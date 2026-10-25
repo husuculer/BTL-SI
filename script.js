@@ -1,6 +1,25 @@
-// Sənin təqdim etdiyin API açarları
-const GEMINI_API_KEY = "AQ.Ab8RN6I8OIv2GHg8Chgbn38AzyT2IAJKnc9mwyjnPJFBTFXOKg";
-const POLLINATIONS_API_KEY = "sk_5Uag4G8oj5GdXKTItUdu3LDlOPM37IqT";
+// Göndərdiyin Yeni API Açarları
+const GROQ_API_KEY = "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";
+const IMAGE_API_KEY = "key_CgPCA82szNRyf7CEabwd9";
+
+let currentMode = 'chat'; // Varsayılan mod
+
+function setMode(mode) {
+  currentMode = mode;
+  const chatBtn = document.getElementById('chatModeBtn');
+  const imgBtn = document.getElementById('imageModeBtn');
+  const inputField = document.getElementById('userInput');
+
+  if (mode === 'chat') {
+    chatBtn.classList.add('active');
+    imgBtn.classList.remove('active');
+    inputField.placeholder = "Sualınızı və ya mesajınızı yazın...";
+  } else {
+    imgBtn.classList.add('active');
+    chatBtn.classList.remove('active');
+    inputField.placeholder = "Yaratmaq istədiyiniz şəkli təsvir edin (məs: qırmızı alma)...";
+  }
+}
 
 async function sendMessage() {
   const inputField = document.getElementById('userInput');
@@ -8,54 +27,71 @@ async function sendMessage() {
 
   if (!userText) return;
 
-  // İstifadəçi mesajını ekrana yaz
   appendMessage(userText, 'user-msg');
   inputField.value = '';
 
-  // AI düşünür mesajı
-  const loadingDiv = appendMessage('BTL-SI düşünür...', 'ai-msg');
+  // Animasiyalı Yüklənir qutusu
+  const loadingDiv = document.createElement('div');
+  loadingDiv.className = 'message ai-msg';
+  loadingDiv.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div>`;
+  
+  const chatBox = document.getElementById('chatBox');
+  chatBox.appendChild(loadingDiv);
+  scrollToBottom();
 
-  // Şəkil tələbini yoxlayaq
-  const lowerText = userText.toLowerCase();
-  const isImageReq = lowerText.includes('şəkil çək') || lowerText.includes('şəkil yarat') || lowerText.includes('şəkli çək');
-
-  if (isImageReq) {
-    loadingDiv.innerText = 'Şəkil hazırlanır, zəhmət olmasa gözləyin...';
-    
-    const promptClean = encodeURIComponent(userText);
-    const imgUrl = `https://image.pollinations.ai/prompt/${promptClean}?width=800&height=600&nologo=true&key=${POLLINATIONS_API_KEY}`;
-    
-    loadingDiv.innerHTML = `Buyurun, istədiyiniz şəkil:<br><img src="${imgUrl}" alt="AI Şəkil" onload="scrollToBottom()">`;
+  // Mode 1: Şəkil Yaratmaq
+  if (currentMode === 'image') {
+    try {
+      const promptClean = encodeURIComponent(userText);
+      const imgUrl = `https://image.pollinations.ai/prompt/${promptClean}?width=800&height=600&nologo=true&key=${IMAGE_API_KEY}`;
+      
+      const imgElement = document.createElement('img');
+      imgElement.src = imgUrl;
+      imgElement.alt = "AI Şəkil";
+      imgElement.onload = () => scrollToBottom();
+      
+      loadingDiv.innerHTML = 'Buyurun, istədiyiniz şəkil:<br>';
+      loadingDiv.appendChild(imgElement);
+    } catch (err) {
+      loadingDiv.innerText = "Şəkil yaradılarkən xəta baş verdi.";
+    }
     return;
   }
 
-  // Gemini API vasitəsilə mətn və söhbət cavabı
+  // Mode 2: Groq (Llama 3) AI Mətn Cavabı
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Authorization": `Bearer ${GROQ_API_KEY}`,
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
-        contents: [
+        model: "llama-3.3-70b-versatile",
+        messages: [
           {
-            parts: [
-              { text: "Sən BTL-SI (Bakı Türk Liseyi Super Intellekt) adlı məktəb assistentisən. Həmişə Azərbaycan dilində, səliqəli, dəqiq və yardımçı tərzdə cavab ver. İstifadəçinin yazdığı kiçik hərf səhvlərini anlayışla qarşıla, mənanı dərk edərək peşəkar şəkildə cavablandır." },
-              { text: userText }
-            ]
+            role: "system",
+            content: "Sən BTL-SI (Bakı Türk Liseyi Super Intellekt) adlı məktəb assistentisən. Həmişə Azərbaycan dilində, səliqəli, dəqiq və yardımçı tərzdə cavab ver. İstifadəçinin yazdığı kiçik hərf səhvlərini anlayışla qarşıla, mənanı dərk edərək peşəkar şəkildə cavablandır."
+          },
+          {
+            role: "user",
+            content: userText
           }
         ]
       })
     });
 
     const data = await response.json();
-    
-    if (data.candidates && data.candidates[0].content.parts[0].text) {
-      const aiReply = data.candidates[0].content.parts[0].text;
-      loadingDiv.innerText = aiReply;
+
+    if (data.choices && data.choices[0].message.content) {
+      loadingDiv.innerText = data.choices[0].message.content;
+    } else if (data.error) {
+      loadingDiv.innerText = "API Xətası: " + data.error.message;
     } else {
-      loadingDiv.innerText = "Üzr istəyirəm, cavab hazırlayarkən xəta baş verdi.";
+      loadingDiv.innerText = "Üzr istəyirəm, cavab hazırlana bilmədi.";
     }
   } catch (error) {
-    loadingDiv.innerText = "Şəbəkə xətası baş verdi. Zəhmət olmasa yenidən yoxlayın.";
+    loadingDiv.innerText = "Şəbəkə xətası baş verdi. Yenidən yoxlayın.";
   }
 
   scrollToBottom();
