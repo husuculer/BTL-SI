@@ -174,9 +174,11 @@ async function sendMessage() {
 
   if (currentMode === 'image') {
     try {
-      // Flux modeli və keyfiyyəti artıran avtomatik əlavələr
-      const enhancedPrompt = userText + ", photorealistic, highly detailed, 8k resolution, cinematic lighting, sharp focus, masterpiece";
+      // Şəkil keyfiyyətini və realistikliyi artıran xüsusi açar sözlər əlavə edirik
+      const enhancedPrompt = userText + ", ultra realistic, highly detailed photography, 8k resolution, professional lighting, photorealistic skin texture, sharp focus";
       const promptClean = encodeURIComponent(enhancedPrompt);
+      
+      // FLUX modeli ilə yüksək keyfiyyətli vizual təsvir
       const imgUrl = `https://image.pollinations.ai/prompt/${promptClean}?model=flux&width=1024&height=768&nologo=true`;
       
       const imgElement = document.createElement('img');
