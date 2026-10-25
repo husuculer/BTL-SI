@@ -17,7 +17,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // v1beta əvəzinə stabil v1 versiyası istifadə olunur
     const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: {
@@ -26,7 +25,6 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         contents: [
           {
-            role: "user",
             parts: [
               { text: `${systemPrompt}\n\nİstifadəçi sualı: ${prompt}` }
             ]
@@ -48,10 +46,8 @@ export default async function handler(req, res) {
           }
         ]
       });
-    } else if (data.error) {
-      return res.status(500).json({ error: data.error.message });
     } else {
-      return res.status(500).json({ error: "Gemini API-dən gözlənilməz cavab gəldi: " + JSON.stringify(data) });
+      return res.status(500).json({ error: "Gemini API xətası: " + JSON.stringify(data) });
     }
   } catch (error) {
     return res.status(500).json({ error: error.message });
