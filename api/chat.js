@@ -4,10 +4,10 @@ export default async function handler(req, res) {
   }
 
   const { mode, prompt } = req.body;
-  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
-  if (!GEMINI_API_KEY) {
-    return res.status(500).json({ error: 'GEMINI_API_KEY environment variable is not set.' });
+  if (!OPENROUTER_API_KEY) {
+    return res.status(500).json({ error: 'OPENROUTER_API_KEY environment variable is not set.' });
   }
 
   let systemPrompt = "Sən BTL-SI (Bakı Türk Liseyi Super Intellekt) adlı məktəb assistentisən. Həmişə Azərbaycan dilində, səliqəli və dəqiq cavab ver.";
@@ -17,39 +17,29 @@ export default async function handler(req, res) {
   }
 
   try {
-    // AQ. ilə başlayan tokenlər üçün ?key= əvəzinə Authorization: Bearer başlığı istifadə olunur
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent`, {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
+        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${GEMINI_API_KEY}`
+        "HTTP-Referer": "https://btl-si.vercel.app", // İstəyə görə saytının adı
+        "X-Title": "BTL-SI"
       },
       body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: `${systemPrompt}\n\nİstifadəçi sualı: ${prompt}` }
-            ]
-          }
+        model: "meta-llama/llama-3.1-8b-instruct:free", // Pulsuz və stabil model
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: prompt }
         ]
       })
     });
 
-    const data = await geminiResponse.json();
-
-    if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-      const text = data.candidates[0].content.parts[0].text;
-      return res.status(200).json({
-        choices: [
-          {
-            message: {
-              content: text
-            }
-          }
-        ]
-      });
+    const data = await response.json();
+    
+    if (data.choices && data.choices.length > 0) {
+      return res.status(200).json(data);
     } else {
-      return res.status(500).json({ error: "Gemini API xətası: " + JSON.stringify(data) });
+      return res.status(500).json({ error: "OpenRouter xətası: " + JSON.stringify(data) });
     }
   } catch (error) {
     return res.status(500).json({ error: error.message });
