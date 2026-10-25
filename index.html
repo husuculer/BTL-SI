@@ -43,12 +43,35 @@
     .chat-header {
       background: var(--primary-color);
       color: white;
-      padding: 18px;
+      padding: 16px;
       text-align: center;
     }
 
     .chat-header h2 { margin: 0; font-size: 20px; letter-spacing: 1px; }
     .chat-header p { margin: 4px 0 0 0; font-size: 13px; opacity: 0.9; }
+
+    /* Mod Seçimi Düymələri */
+    .mode-selector {
+      display: flex;
+      background: #f1f1f1;
+      border-bottom: 2px solid #ddd;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-weight: bold;
+      color: #555;
+      transition: 0.3s;
+    }
+
+    .mode-btn.active {
+      background: var(--primary-color);
+      color: white;
+    }
 
     .chat-box {
       flex: 1;
@@ -68,6 +91,12 @@
       line-height: 1.5;
       white-space: pre-wrap;
       word-break: break-word;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .user-msg {
@@ -92,6 +121,30 @@
       border: 1px solid #ddd;
     }
 
+    /* 3 nöqtə animasiyası */
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      padding: 4px 0;
+    }
+
+    .typing-dots span {
+      width: 8px;
+      height: 8px;
+      background-color: var(--primary-color);
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1.0); }
+    }
+
     .input-area {
       display: flex;
       padding: 15px;
@@ -111,7 +164,7 @@
 
     input:focus { border-color: var(--primary-color); }
 
-    button {
+    .send-btn {
       padding: 12px 20px;
       border: none;
       border-radius: 8px;
@@ -123,7 +176,7 @@
       transition: background 0.2s;
     }
 
-    button:hover { background: var(--primary-hover); }
+    .send-btn:hover { background: var(--primary-hover); }
   </style>
 </head>
 <body>
@@ -134,13 +187,19 @@
       <p>Bakı Türk Liseyi Super Intellekt - Yardımçı Asistent</p>
     </div>
 
+    <!-- Mod Seçimi -->
+    <div class="mode-selector">
+      <button id="chatModeBtn" class="mode-btn active" onclick="setMode('chat')">💬 Söhbət / Sual</button>
+      <button id="imageModeBtn" class="mode-btn" onclick="setMode('image')">🎨 Şəkil Yarat</button>
+    </div>
+
     <div class="chat-box" id="chatBox">
-      <div class="message ai-msg">Salam! Mən BTL-SI, sənin məktəb assistentiyəm. Sənə necə kömək edə bilərəm? (Həmçinin şəkil yarada bilərəm, məsələn: "şəkil çək: məktəb")</div>
+      <div class="message ai-msg">Salam! Mən BTL-SI, sənin məktəb assistentiyəm. Yuxarıdan rejim seçib söhbət edə və ya şəkil yarada bilərsən!</div>
     </div>
 
     <div class="input-area">
-      <input type="text" id="userInput" placeholder="Mesajınızı bura yazın..." onkeypress="handleKeyPress(event)">
-      <button onclick="sendMessage()">Göndər</button>
+      <input type="text" id="userInput" placeholder="Sualınızı yazın..." onkeypress="handleKeyPress(event)">
+      <button class="send-btn" onclick="sendMessage()">Göndər</button>
     </div>
   </div>
 
