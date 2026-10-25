@@ -17,10 +17,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    // AQ. ilə başlayan tokenlər üçün ?key= əvəzinə Authorization: Bearer başlığı istifadə olunur
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${GEMINI_API_KEY}`
       },
       body: JSON.stringify({
         contents: [
