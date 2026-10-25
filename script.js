@@ -166,7 +166,8 @@ async function sendMessage() {
 
   const loadingDiv = document.createElement('div');
   loadingDiv.className = 'message ai-msg';
-  loadingDiv.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div>`;
+  // 3 nöqtə əvəzinə loqonun scale (nəbz) effekti ilə yüklənməsi:
+  loadingDiv.innerHTML = `<img src="edited-photo.png" class="logo-loader" alt="Yüklənir...">`;
   
   const chatBox = document.getElementById('chatBox');
   chatBox.appendChild(loadingDiv);
@@ -188,7 +189,7 @@ async function sendMessage() {
 
       currentSession.messages.push({ content: imgUrl, className: 'ai-msg', type: 'image' });
       saveAndRefresh();
-    } catch (err) {
+    } csvcatch (err) {
       loadingDiv.innerText = "Şəkil yaradılarkən xəta baş verdi.";
     }
     return;
