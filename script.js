@@ -128,14 +128,14 @@ function loadCurrentSessionMessages() {
 
   const currentSession = sessions.find(s => s.id === currentSessionId);
   if (!currentSession || currentSession.messages.length === 0) {
-    chatBox.innerHTML = `<div class="message ai-msg">Salam! Mən BTL-SI. Sual vermək və ya rejim seçmək üçün sol aşağıdakı "+" düyməsindən istifadə edə bilərsən.</div>`;
+    chatBox.innerHTML = `<div class="message ai-msg fade-in">Salam! Mən BTL-SI. Sual vermək və ya rejim seçmək üçün sol aşağıdakı "+" düyməsindən istifadə edə bilərsən.</div>`;
     return;
   }
 
   currentSession.messages.forEach(msg => {
     if (msg.type === 'image') {
       const loadingDiv = document.createElement('div');
-      loadingDiv.className = 'message ai-msg';
+      loadingDiv.className = 'message ai-msg fade-in';
       loadingDiv.innerHTML = `Buyurun, istədiyiniz şəkil:<br>`;
       const imgElement = document.createElement('img');
       imgElement.src = msg.content;
@@ -165,7 +165,7 @@ async function sendMessage() {
   inputField.value = '';
 
   const loadingDiv = document.createElement('div');
-  loadingDiv.className = 'message ai-msg';
+  loadingDiv.className = 'message ai-msg fade-in';
   loadingDiv.innerHTML = `<img src="edited-photo.png" class="logo-loader" alt="Yüklənir...">`;
   
   const chatBox = document.getElementById('chatBox');
@@ -181,14 +181,19 @@ async function sendMessage() {
       imgElement.src = imgUrl;
       imgElement.alt = "AI Şəkil";
       imgElement.onload = () => scrollToBottom();
-      imgElement.onerror = () => { loadingDiv.innerText = "Şəkil yüklənə bilmədi."; };
+      imgElement.onerror = () => { 
+        loadingDiv.className = 'message ai-msg fade-in';
+        loadingDiv.innerText = "Şəkil yüklənə bilmədi."; 
+      };
       
+      loadingDiv.className = 'message ai-msg fade-in';
       loadingDiv.innerHTML = 'Buyurun, istədiyiniz şəkil:<br>';
       loadingDiv.appendChild(imgElement);
 
       currentSession.messages.push({ content: imgUrl, className: 'ai-msg', type: 'image' });
       saveAndRefresh();
     } catch (err) {
+      loadingDiv.className = 'message ai-msg fade-in';
       loadingDiv.innerText = "Şəkil yaradılarkən xəta baş verdi.";
     }
     return;
@@ -211,12 +216,15 @@ async function sendMessage() {
     let aiReply = "";
     if (data.choices && data.choices.length > 0 && data.choices[0].message) {
       aiReply = data.choices[0].message.content;
+      loadingDiv.className = 'message ai-msg fade-in';
       loadingDiv.innerText = aiReply;
     } else if (data.error) {
       aiReply = "Xəta: " + (data.error.message || JSON.stringify(data.error));
+      loadingDiv.className = 'message ai-msg fade-in';
       loadingDiv.innerText = aiReply;
     } else {
       aiReply = "Gözlənilməz cavab formatı alındı.";
+      loadingDiv.className = 'message ai-msg fade-in';
       loadingDiv.innerText = aiReply;
     }
 
@@ -225,6 +233,7 @@ async function sendMessage() {
 
   } catch (error) {
     const errText = "Şəbəkə xətası baş verdi: " + error.message;
+    loadingDiv.className = 'message ai-msg fade-in';
     loadingDiv.innerText = errText;
     currentSession.messages.push({ content: errText, className: 'ai-msg', type: 'text' });
     saveAndRefresh();
@@ -236,7 +245,7 @@ async function sendMessage() {
 function appendMessageUI(text, className) {
   const chatBox = document.getElementById('chatBox');
   const msgDiv = document.createElement('div');
-  msgDiv.className = `message ${className}`;
+  msgDiv.className = `message ${className} fade-in`;
   msgDiv.innerText = text;
   chatBox.appendChild(msgDiv);
   scrollToBottom();
