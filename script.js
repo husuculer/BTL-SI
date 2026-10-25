@@ -69,7 +69,7 @@ async function sendMessage() {
   }
 
   try {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const apiResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${GROQ_API_KEY}`,
@@ -80,18 +80,19 @@ async function sendMessage() {
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userText }
-        ]
+        ],
+        temperature: 0.7
       })
     });
 
-    const data = await response.json();
+    const data = await apiResponse.json();
 
-    if (data.choices && data.choices[0] && data.choices[0].message) {
+    if (data.choices && data.choices.length > 0 && data.choices[0].message) {
       loadingDiv.innerText = data.choices[0].message.content;
     } else if (data.error) {
       loadingDiv.innerText = "API Xətası: " + data.error.message;
     } else {
-      loadingDiv.innerText = "Server cavab verdi, lakin məlumat oxunmadı: " + JSON.stringify(data);
+      loadingDiv.innerText = "Gözlənilməz cavab formatı alındı.";
     }
   } catch (error) {
     loadingDiv.innerText = "Şəbəkə xətası baş verdi: " + error.message;
