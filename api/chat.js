@@ -4,10 +4,10 @@ export default async function handler(req, res) {
   }
 
   const { mode, prompt } = req.body;
-  const GROQ_API_KEY = process.env.GROQ_API_KEY;
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-  if (!GROQ_API_KEY) {
-    return res.status(500).json({ error: 'GROQ_API_KEY environment variable is not set.' });
+  if (!GEMINI_API_KEY) {
+    return res.status(500).json({ error: 'GEMINI_API_KEY environment variable is not set.' });
   }
 
   let systemPrompt = "Sən BTL-SI (Bakı Türk Liseyi Super Intellekt) adlı məktəb assistentisən. Həmişə Azərbaycan dilində, səliqəli və dəqiq cavab ver.";
@@ -16,44 +16,43 @@ export default async function handler(req, res) {
     systemPrompt = "Sən BTL-SI Deep Search sistemisən. Verilən mövzunu səthi deyil, son dərəcə ətraflı, məntiqi strukturda, addım-addım təhlil edərək, dərindən araşdırıb Azərbaycan dilində peşəkar hesabat şəklində izah et.";
   }
 
-  // İşləyə biləcək modellərin siyahısı (növbə ilə yoxlanılacaq)
-  const modelsToTry = [
-    "llama-3.1-8b-instant",
-    "llama-3.3-70b-versatile",
-    "gemma2-9b-it"
-  ];
+  try {
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: `${systemPrompt}\n\nİstifadəçi sualı: ${prompt}` }
+            ]
+          }
+        ]
+      })
+    });
 
-  let lastError = null;
+    const data = await geminiResponse.json();
 
-  for (const model of modelsToTry) {
-    try {
-      const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${GROQ_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: model,
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: prompt }
-          ],
-          temperature: 0.7
-        })
+    if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+      const text = data.candidates[0].content.parts[0].text;
+      return res.status(200).json({
+        choices: [
+          {
+            message: {
+              content: text
+            }
+          }
+        ]
       });
-
-      const data = await groqResponse.json();
-
-      if (groqResponse.ok && data.choices && data.choices.length > 0) {
-        return res.status(200).json(data);
-      } else {
-        lastError = data.error?.message || JSON.stringify(data);
-      }
-    } catch (error) {
-      lastError = error.message;
+    } else if (data.error) {
+      return res.status(500).json({ error: data.error.message });
+    } else {
+      return res.status(500).json({ error: "Gemini API-dən gözlənilməz cavab gəldi." });
     }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
-
-  return res.status(500).json({ error: "Heç bir model işləmədi. Son xəta: " + lastError });
 }
