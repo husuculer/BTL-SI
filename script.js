@@ -1,6 +1,3 @@
-const GROQ_API_KEY = "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";
-const IMAGE_API_KEY = "key_CgPCA82szNRyf7CEabwd9";
-
 let currentMode = 'chat';
 
 function setMode(mode) {
@@ -62,26 +59,16 @@ async function sendMessage() {
     return;
   }
 
-  let systemPrompt = "Sən BTL-SI (Bakı Türk Liseyi Super Intellekt) adlı məktəb assistentisən. Həmişə Azərbaycan dilində, səliqəli və dəqiq cavab ver.";
-  
-  if (currentMode === 'search') {
-    systemPrompt = "Sən BTL-SI Deep Search sistemisən. Verilən mövzunu səthi deyil, son dərəcə ətraflı, məntiqi strukturda, addım-addım təhlil edərək, dərindən araşdırıb Azərbaycan dilində peşəkar hesabat şəklində izah et.";
-  }
-
+  // Vercel Serverless Endpoint-ə sorğu göndəririk
   try {
-    const apiResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const apiResponse = await fetch("/api/chat", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${GROQ_API_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userText }
-        ],
-        temperature: 0.7
+        mode: currentMode,
+        prompt: userText
       })
     });
 
@@ -90,7 +77,7 @@ async function sendMessage() {
     if (data.choices && data.choices.length > 0 && data.choices[0].message) {
       loadingDiv.innerText = data.choices[0].message.content;
     } else if (data.error) {
-      loadingDiv.innerText = "API Xətası: " + data.error.message;
+      loadingDiv.innerText = "Xəta: " + (data.error.message || data.error);
     } else {
       loadingDiv.innerText = "Gözlənilməz cavab formatı alındı.";
     }
