@@ -43,7 +43,7 @@ function selectMode(mode, label) {
   } else if (mode === 'search') {
     inputField.placeholder = "Dərin araşdırma etmək istədiyiniz mövzunu yazın...";
   } else if (mode === 'psychologist') {
-    inputField.placeholder = "Psixoloqla dərdləş və ya söhbət et...";
+    inputField.placeholder = "Psixoloqa nə demək istəyirsən? (Məs: necəsən?)...";
   } else if (mode === 'image') {
     inputField.placeholder = "Yaratmaq istədiyiniz şəkli təsvir edin...";
   }
