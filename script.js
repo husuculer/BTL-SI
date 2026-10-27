@@ -43,7 +43,7 @@ function selectMode(mode, label) {
   } else if (mode === 'search') {
     inputField.placeholder = "Dərin araşdırma etmək istədiyiniz mövzunu yazın...";
   } else if (mode === 'psychologist') {
-    inputField.placeholder = "Psixoloqa nə demək istəyirsən? (Məs: necəsən?)...";
+    inputField.placeholder = "Psixoloqla dərdləş və ya söhbət et...";
   } else if (mode === 'image') {
     inputField.placeholder = "Yaratmaq istədiyiniz şəkli təsvir edin...";
   }
@@ -204,9 +204,7 @@ async function sendMessage() {
   try {
     const apiResponse = await fetch("/api/chat", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         mode: currentMode,
         prompt: userText
