@@ -42,6 +42,8 @@ function selectMode(mode, label) {
     inputField.placeholder = "Sualınızı və ya mesajınızı yazın...";
   } else if (mode === 'search') {
     inputField.placeholder = "Dərin araşdırma etmək istədiyiniz mövzunu yazın...";
+  } else if (mode === 'psychologist') {
+    inputField.placeholder = "Psixoloqla dərdləş və ya söhbət et...";
   } else if (mode === 'image') {
     inputField.placeholder = "Yaratmaq istədiyiniz şəkli təsvir edin...";
   }
