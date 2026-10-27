@@ -41,7 +41,7 @@ VACİB QAYDALAR:
 4. İstənilən suala hər zaman geniş və dərindən araşdırılmış şəkildə cavab ver.
 
 TDV BAKI TÜRK LİSEYİ MƏLUMAT BAZASI (YALNIZ MƏKTƏB HAQQINDA SORĞULAR ÜÇÜN):
-- Tarixçə və Status: 1994-cü ildən fəaliyyətə başlayıb. Türkiyə Diyanət Vəqfi tərəfindən idarə olunur, Təhsil Nazirliyinin tabeliyindədir. Təhsil ödənişsizdir, dərslər Azərbaycan dilindədır.
+- Tarixçə və Status: 1994-cü ildən fəaliyyətə başlayıb. Türkiyə Diyanət Vəqfi tərəfindən idarə olunur, Təhsil Nazirliyinin tabeliyindədir. Təhsil ödənişsizdir, dərslər Azərbaycan dilindədir.
 - Rəhbərlik: Direktor Kadir Bektaşoğlu (2004-cü ildən).
 - Qəbul Qaydaları: Hər il iyun ayının əvvəlində VI və IX siniflərə xüsusi imtahanla qəbul aparılır.
 - Akademik Nailiyyətlər və Olimpiadalar: 2023-cü ildə 600-dən çox bal toplayan 38 məzun. Araz Şadmanzadə, Ali Məmmədov, Jasmin Qurbalı və Leyla Kərimli kimi olimpiada qalibləri.
@@ -51,52 +51,32 @@ TDV BAKI TÜRK LİSEYİ MƏLUMAT BAZASI (YALNIZ MƏKTƏB HAQQINDA SORĞULAR ÜÇ
     systemPrompt = `Sən BTL-SI Deep Search sistemisən. Mürəkkəb mövzuları və sorğuları dərindən və ətraflı təhlil edirsən. Əsla "##", "---", "**" kimi Markdown işlətmə. Cavabları təmiz düz mətn şəklində yaz.`;
   } else if (mode === 'psychologist') {
     systemPrompt = `Sən BTL-SI Psixoloq və Dərdləşmə Rejimisən. Heç bir əlavə seçim və ya sual gözləmədən, özünə təbii, səmimi, qayğıkeş və həm psixoloji məsləhətlər verə bilən, həm də yaxın dost kimi söhbət edən bir persona seçirsən. 
-    İstifadəçi sənə nə yazırsa yazsın, quru psixoloq kimi yox, canlı, dərindən dinləyən, empatiya quran və maraqlı söhbət açan biri kimi cavab verirsən. İstəsən söhbət əsnasında öz fikrini və ya ən maraqlı yanaşmanı sərbəst şəkildə seçib irəli sürə bilərsən.
+    İstifadəçi sənə nə yazırsa yazsın, quru psixoloq kimi yox, canlı, dərindən dinləyən, empatiya quran və maraqlı söhbət açan biri kimi cavab verirsən.
     Əsla robot kimi danışma. QƏTİYYƏN "##", "---", "**" kimi Markdown simvolları işlətmə. Cavabları tam təmiz, düz mətn abzasları şəklində yaz.`;
   }
 
-  const PRIMARY_MODEL = "llama-3.1-8b-instant";
-  const FALLBACK_MODEL = "openai/gpt-oss-20b";
+  // Yalnız əsas və sürətli model istifadə olunur, limit xətası verən fallback model silindi
+  const MODEL_NAME = "llama-3.1-8b-instant";
 
   try {
-    let response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${GROQ_API_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: PRIMARY_MODEL,
+        model: MODEL_NAME,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: prompt }
         ],
-        temperature: 0.8,
+        temperature: 0.7,
         max_tokens: 2048
       })
     });
 
-    let data = await response.json();
-
-    if (!response.ok && data.error && data.error.code === 'model_not_found') {
-      response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${GROQ_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: FALLBACK_MODEL,
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: prompt }
-          ],
-          temperature: 0.8,
-          max_tokens: 2048
-        })
-      });
-      data = await response.json();
-    }
+    const data = await response.json();
 
     if (response.ok && data.choices && data.choices.length > 0) {
       return res.status(200).json(data);
