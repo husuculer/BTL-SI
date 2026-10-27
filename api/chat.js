@@ -55,7 +55,7 @@ TDV BAKI TÜRK LİSEYİ MƏLUMAT BAZASI (YALNIZ MƏKTƏB HAQQINDA SORĞULAR ÜÇ
     Əsla robot kimi danışma. QƏTİYYƏN "##", "---", "**" kimi Markdown simvolları işlətmə. Cavabları tam təmiz, düz mətn abzasları şəklində yaz.`;
   }
 
-  const MODEL_NAME = "mixtral-8x7b-32768";
+  const MODEL_NAME = "llama-3.1-70b-versatile";
 
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
