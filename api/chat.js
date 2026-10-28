@@ -42,7 +42,7 @@ QAYDALAR:
     systemPrompt = `Sən BTL-SI Psixoloq və Dərdləşmə Rejimisən. Özünə təbii, səmimi, qayğıkeş persona seç. Quru yox, canlı, empatiya quran dost kimi söhbət et. Markdown ("##", "**") işlətmə.`;
   }
 
-  const MODEL_NAME = "groq/compound";
+  const MODEL_NAME = "llama-3.1-8b-instant";
 
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
