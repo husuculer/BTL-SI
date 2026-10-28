@@ -51,7 +51,7 @@ function selectMode(mode, label) {
   } else if (mode === 'psychologist') {
     inputField.placeholder = "Psixoloqla dərdləş və ya söhbət et...";
   } else if (mode === 'image') {
-    inputField.placeholder = "Axtarmaq istədiyiniz şəkli təsvir edin (məs: cyberpunk city)...";
+    inputField.placeholder = "Yaratmaq istədiyiniz şəkli təsvir edin (məs: cinematic futuristic city)...";
   }
 }
 
@@ -183,30 +183,31 @@ async function sendMessage() {
 
   if (currentMode === 'image') {
     try {
-      // Pollinations ləğv olundu, Lexica AI (yüksək keyfiyyətli real AI şəkil bazası) istifadə olunur
-      const encodedPrompt = encodeURIComponent(userText);
-      const res = await fetch(`https://lexica.art/api/v1/search?q=${encodedPrompt}`);
-      const data = await res.json();
+      // Yüksək keyfiyyətli vizual təsvir parametrləri əlavə edərək təmiz şəkil linki qururuq
+      const enhancedPrompt = encodeURIComponent(userText + ", highly detailed, cinematic lighting, 4k resolution, photorealistic");
+      const imgUrl = `https://pollinations.ai/p/${enhancedPrompt}?width=1024&height=1024&seed=${Math.floor(Math.random() * 999999)}&nologo=true`;
       
-      if (data.images && data.images.length > 0) {
-        const imgUrl = data.images[0].src;
+      const imgElement = document.createElement('img');
+      imgElement.src = imgUrl;
+      imgElement.alt = "AI Şəkil";
+      
+      imgElement.onload = () => {
         loadingDiv.className = 'message ai-msg fade-in';
         loadingDiv.innerHTML = 'Buyurun, istədiyiniz şəkil:<br>';
-        const imgElement = document.createElement('img');
-        imgElement.src = imgUrl;
-        imgElement.alt = "AI Şəkil";
-        imgElement.onload = () => scrollToBottom();
         loadingDiv.appendChild(imgElement);
+        scrollToBottom();
+      };
 
-        currentSession.messages.push({ content: imgUrl, className: 'ai-msg', type: 'image' });
-        saveAndRefresh();
-      } else {
+      imgElement.onerror = () => {
         loadingDiv.className = 'message ai-msg fade-in';
-        loadingDiv.innerText = "Bu sorğuya uyğun şəkil tapılmadı.";
-      }
+        loadingDiv.innerText = "Şəkil yaradılarkən xəta baş verdi.";
+      };
+
+      currentSession.messages.push({ content: imgUrl, className: 'ai-msg', type: 'image' });
+      saveAndRefresh();
     } catch (err) {
       loadingDiv.className = 'message ai-msg fade-in';
-      loadingDiv.innerText = "Şəkil yüklənərkən xəta baş verdi: " + err.message;
+      loadingDiv.innerText = "Şəkil yaradılarkən xəta baş verdi.";
     }
     return;
   }
