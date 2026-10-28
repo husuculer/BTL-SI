@@ -12,6 +12,16 @@
       --sidebar-bg: #2d0a17;
       --card-bg: #ffffff;
       --text-color: #2b2b2b;
+      --chat-bg: #fdf8f9;
+    }
+
+    /* Psixoloq modu aktiv olanda tətbiq olunacaq yaşıl temalar */
+    body.psychologist-theme {
+      --primary-color: #1b4d3e;
+      --primary-hover: #12352b;
+      --bg-color: #0f2d24;
+      --sidebar-bg: #091d17;
+      --chat-bg: #f3f8f6;
     }
 
     * { box-sizing: border-box; }
@@ -24,6 +34,7 @@
       height: 100vh;
       margin: 0;
       overflow: hidden;
+      transition: background 0.3s ease;
     }
 
     .app-container {
@@ -39,6 +50,7 @@
       display: flex;
       flex-direction: column;
       border-right: 1px solid rgba(255,255,255,0.1);
+      transition: background 0.3s ease;
     }
 
     .sidebar-header {
@@ -109,6 +121,7 @@
       color: white;
       padding: 16px;
       text-align: center;
+      transition: background 0.3s ease;
     }
 
     .chat-header h2 { margin: 0; font-size: 18px; letter-spacing: 1px; }
@@ -121,7 +134,8 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      background: #fdf8f9;
+      background: var(--chat-bg);
+      transition: background 0.3s ease;
     }
 
     .message {
@@ -139,6 +153,7 @@
       color: white;
       align-self: flex-end;
       border-bottom-right-radius: 2px;
+      transition: background 0.3s ease;
     }
 
     .ai-msg {
