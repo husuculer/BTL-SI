@@ -37,6 +37,13 @@ function selectMode(mode, label) {
     indicator.classList.remove('show');
   }
 
+  // Psixoloq moduna keçəndə arxa planı yaşıl elə, yoxsa normal saxla
+  if (mode === 'psychologist') {
+    document.body.classList.add('psychologist-theme');
+  } else {
+    document.body.classList.remove('psychologist-theme');
+  }
+
   const inputField = document.getElementById('userInput');
   if (mode === 'chat') {
     inputField.placeholder = "Sualınızı və ya mesajınızı yazın...";
@@ -45,12 +52,13 @@ function selectMode(mode, label) {
   } else if (mode === 'psychologist') {
     inputField.placeholder = "Psixoloqla dərdləş və ya söhbət et...";
   } else if (mode === 'image') {
-    inputField.placeholder = "Yaratmaq istədiyiniz şəkli təsvir edin...";
+    inputField.placeholder = "Yaratmaq istədiyiniz şəkli təsvir edin (məs: futuristic city)...";
   }
 }
 
 function resetMode() {
   currentMode = 'chat';
+  document.body.classList.remove('psychologist-theme');
   document.getElementById('activeModeIndicator').classList.remove('show');
   document.getElementById('userInput').placeholder = "Mesajınızı bura yazın...";
 }
@@ -176,8 +184,9 @@ async function sendMessage() {
 
   if (currentMode === 'image') {
     try {
-      const promptClean = encodeURIComponent(userText + ", high quality, detailed, realistic, 4k");
-      const imgUrl = `https://image.pollinations.ai/prompt/${promptClean}?width=800&height=600&nologo=true`;
+      // Daha keyfiyyətli şəkil generatoru (Lexica / DeepAI tipli alternativ API)
+      const encodedPrompt = encodeURIComponent(userText);
+      const imgUrl = `https://pollinations.ai/p/${encodedPrompt}?width=1024&height=1024&seed=${Math.floor(Math.random()*100000)}&nologo=true`;
       
       const imgElement = document.createElement('img');
       imgElement.src = imgUrl;
