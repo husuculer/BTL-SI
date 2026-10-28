@@ -30,7 +30,6 @@ export default async function handler(req, res) {
     });
   }
 
-  // Token sərfiyyatını minimuma endirmək üçün sıxlaşdırılmış təlimat
   let systemPrompt = `Sən BTL-SI (Bakı Türk Liseyi Super Intellekt) dost/assistent dəstəyisən. Səmimi, canlı insan kimi danış. Robot ifadələri işlətmə.
 QAYDALAR:
 1. Hallüsinasiya yaratma. Kənar şəxslər və mövzularda dürüst, real faktlarla cavab ver.
@@ -43,7 +42,7 @@ QAYDALAR:
     systemPrompt = `Sən BTL-SI Psixoloq və Dərdləşmə Rejimisən. Özünə təbii, səmimi, qayğıkeş persona seç. Quru yox, canlı, empatiya quran dost kimi söhbət et. Markdown ("##", "**") işlətmə.`;
   }
 
-  const MODEL_NAME = "qwen/qwen3.8-27b";
+  const MODEL_NAME = "llama-3.1-70b-versatile";
 
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -59,7 +58,7 @@ QAYDALAR:
           { role: "user", content: prompt }
         ],
         temperature: 0.7,
-        max_tokens: 1024
+        max_tokens: 4096 // Uzun və geniş cavablar yazmaq üçün limit artırıldı
       })
     });
 
